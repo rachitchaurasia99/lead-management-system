@@ -3,6 +3,7 @@ package com.example.lead.management.system.models;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @Entity
@@ -19,7 +20,8 @@ public class Contact {
     private Long id;
     @Getter
     @Setter
-    private String name;
+    private String firstName;
+    private String lastName;
     @Getter
     @Setter
     private String phone;
@@ -34,24 +36,30 @@ public class Contact {
     private String information;
     @Getter
     @ManyToOne
-    @JoinColumn(name = "restaurant_id")
-    private Restaurant restaurant;
+    @JoinColumn(name = "lead_id")
+    private Lead lead;
+
+    @OneToMany(mappedBy = "contact")
+    private List<Call> calls;
+
 
     public Long getId() {
         return id;
     }
 
-    public void setRestaurant(Restaurant restaurant) {
-        this.restaurant = restaurant;
+    public void setLead(Lead lead) {
+        this.lead = lead;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
 
     public String getPhone() {
         return phone;
@@ -84,4 +92,13 @@ public class Contact {
     public void setInformation(String information) {
         this.information = information;
     }
+
+    public Lead getLead() {
+        return lead;
+    }
+    public List<Call> getCalls() {
+        return calls;
+    }
+
+    public void setCalls(List<Call> calls) { this.calls = calls; }
 }

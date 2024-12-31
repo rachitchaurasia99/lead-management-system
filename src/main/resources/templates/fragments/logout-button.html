@@ -1,0 +1,14 @@
+<style>
+    .logout-container {
+        position: absolute; /* Makes the container positioned relative to the browser window */
+        top: 10px;          /* Adjust the distance from the top */
+        right: 10px;        /* Adjust the distance from the right */
+        z-index: 1000;      /* Ensures the button stays on top of other elements */
+    }
+</style>
+
+<div th:fragment="logout" class="logout-container">
+    <form th:action="@{/logout}" method="post">
+        <button type="submit" class="btn btn-danger">Logout</button>
+    </form>
+</div>

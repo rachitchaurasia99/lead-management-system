@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Call Management</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    .sidebar {
+      height: 100vh;
+      width: 250px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      background-color: #f8f9fa;
+      padding-top: 20px;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar a {
+      text-decoration: none;
+      color: #333;
+      padding: 10px 15px;
+      display: block;
+    }
+
+    .sidebar a:hover {
+      background-color: #e9ecef;
+      color: #000;
+    }
+
+    .container {
+      margin-left: 260px;
+    }
+  </style>
+</head>
+<body>
+<div th:insert="fragments/logout-button :: logout"></div>
+<div class="sidebar">
+  <h4 class="text-center">Menu</h4>
+  <a href="/leads">Leads</a>
+</div>
+<div class="container mt-4">
+  <div class="row mb-4">
+    <div class="col">
+      <h2>Call Records</h2>
+    </div>
+    <div class="col text-end">
+      <a href="/calls/new" class="btn btn-primary">New Call</a>
+    </div>
+  </div>
+
+  <div class="alert alert-info" th:if="${message}" th:text="${message}"></div>
+
+  <div class="card">
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-striped">
+          <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Lead</th>
+            <th>User</th>
+            <th>Actions</th>
+          </tr>
+          </thead>
+          <tbody>
+          <div class="sidebar">
+            <h4 class="text-center">Menu</h4>
+            <a href="/leads">Leads</a>
+          </div>
+          <tr th:each="call : ${calls}">
+            <td th:text="${call.id}"></td>
+            <td th:text="${#dates.format(call.dateTime, 'yyyy-MM-dd HH:mm')}"></td>
+            <td th:text="${call.contact != null ? call.contact.lead.name +'(' + call.contact.firstName + ' ' + call.contact.lastName + ')'  : ''}"></td>
+            <td th:text="${call.user != null ? call.user.firstName : ''}"></td>
+            <td>
+              <div class="btn-group" role="group">
+                <a th:href="@{/calls/{id}/edit(id=${call.id})}"
+                   class="btn btn-sm btn-warning">
+                  Edit
+                </a>
+                <form th:action="@{/calls/{id}(id=${call.id})}"
+                      method="post"
+                      style="display: inline;">
+                  <input type="hidden" name="_method" value="DELETE" />
+                  <button type="submit"
+                          class="btn btn-sm btn-danger"
+                          onclick="return confirm('Are you sure you want to delete this call?')">
+                    Delete
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          <tr th:if="${#lists.isEmpty(calls)}">
+            <td colspan="5" class="text-center">No calls found</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+      <li class="page-item" th:classappend="${calls.hasPrevious()} ? '' : 'disabled'">
+        <a class="page-link" href="#" th:href="@{/calls(page=${calls.number - 1})}">Previous</a>
+      </li>
+      <li class="page-item" th:each="i : ${#numbers.sequence(0, calls.totalPages - 1)}" th:classappend="${i == calls.number} ? 'active' : ''">
+        <a class="page-link" href="#" th:href="@{/calls(page=${i})}" th:text="${i + 1}"></a>
+      </li>
+      <li class="page-item" th:classappend="${calls.hasNext()} ? '' : 'disabled'">
+        <a class="page-link" href="#" th:href="@{/calls(page=${calls.number + 1})}">Next</a>
+      </li>
+    </ul>
+  </nav>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

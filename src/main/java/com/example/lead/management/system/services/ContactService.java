@@ -1,7 +1,8 @@
 package com.example.lead.management.system.services;
 
 import com.example.lead.management.system.models.Contact;
-import com.example.lead.management.system.repository.ContactRepository;
+import com.example.lead.management.system.models.Lead;
+import com.example.lead.management.system.repositories.ContactRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,5 +26,11 @@ public class ContactService {
 
     public void save(Contact contact) {
         contactRepository.save(contact);
+    }
+
+    public void deleteById(Long id) { contactRepository.deleteById(id); }
+
+    public List<Contact> findAllByLead(Lead lead) {
+        return contactRepository.findAllByLead(lead);
     }
 }
