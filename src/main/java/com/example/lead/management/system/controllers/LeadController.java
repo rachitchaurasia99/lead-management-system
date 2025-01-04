@@ -1,5 +1,8 @@
 package com.example.lead.management.system.controllers;
 
+import com.example.lead.management.system.dtos.LeadDto;
+import com.example.lead.management.system.mapper.LeadMapper;
+import com.example.lead.management.system.mapper.UserMapper;
 import com.example.lead.management.system.models.Lead;
 import com.example.lead.management.system.models.User;
 import com.example.lead.management.system.services.LeadService;
@@ -12,30 +15,43 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/leads")
-public class LeadController  {
+public class LeadController {
+
     private final LeadService leadService;
     private final UserService userService;
 
     @Autowired
     public LeadController(LeadService leadService, UserService userService) {
-
         this.leadService = leadService;
         this.userService = userService;
     }
 
     @GetMapping("/new")
     public String create(Model model) {
-        model.addAttribute("lead", new Lead());
+        model.addAttribute("lead", new LeadDto());
+        model.addAttribute("users", userService.findAll());
         model.addAttribute("statuses", Lead.Status.values());
+        model.addAttribute("current_user", currentUser());
+        model.addAttribute("countries", List.of("United States", "Canada", "United Kingdom", "Australia", "India"));
         return "lead-form";
     }
 
     @PostMapping("/save")
-    public String save(Lead lead, RedirectAttributes redirectAttributes) {
+    public String save(@ModelAttribute LeadDto leadDTO, RedirectAttributes redirectAttributes) {
+        Lead lead = new Lead();
+        lead.setName(leadDTO.getName());
+        lead.setAddress(leadDTO.getAddress());
+        lead.setDescription(leadDTO.getDescription());
+        lead.setCallFrequency(leadDTO.getCallFrequency());
+        lead.setUser(leadDTO.getUser());
+        lead.setCurrentStatus(leadDTO.getCurrentStatus());
+
         leadService.save(lead);
         redirectAttributes.addFlashAttribute("success", "Lead saved successfully.");
         return "redirect:/leads";
@@ -46,11 +62,11 @@ public class LeadController  {
                         @RequestParam(defaultValue = "") String query,
                         Model model) {
         PageRequest pageRequest = PageRequest.of(page, 10);
-        Page<Lead> leadsPage = query.isEmpty() ?
-                leadService.findAll(pageRequest) :
-                leadService.findByNameContaining(query, pageRequest);
+        Page<LeadDto> leadsPage = currentUser().isAdmin() ?
+                (query.isEmpty() ? leadService.findAll(pageRequest) : leadService.findByName(query, pageRequest)) :
+                (query.isEmpty() ? leadService.findAllByUser(currentUser(), pageRequest) : leadService.findByUserAndName(currentUser(), query, pageRequest));
 
-        model.addAttribute("current_user", userService.currentUser().get());
+        model.addAttribute("current_user", currentUser());
         model.addAttribute("leads", leadsPage);
         model.addAttribute("query", query);
         return "leads";
@@ -58,49 +74,40 @@ public class LeadController  {
 
     @GetMapping("/{id}/edit")
     public String edit(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        Optional<Lead> leadOpt = leadService.findById(id);
+        Optional<Lead> leadOpt = leadService.findById(id).map(LeadMapper::toEntity);
         if (leadOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Lead not found.");
             return "redirect:/leads";
         }
 
         Lead lead = leadOpt.get();
-        model.addAttribute("lead", lead);
+        LeadDto leadDTO = LeadMapper.toDTO(lead);
+        model.addAttribute("lead", leadDTO);
+        model.addAttribute("current_user", currentUser());
+        model.addAttribute("users", userService.findAll());
         model.addAttribute("statuses", Lead.Status.values());
+        model.addAttribute("countries", List.of("United States", "Canada", "United Kingdom", "Australia", "India"));
         model.addAttribute("allowedTransitions", lead.getStatus().getAllowedTransitions());
         return "lead-form";
     }
 
     @PostMapping("/{id}/update")
-    public String updateLead(@PathVariable Long id, @ModelAttribute Lead updatedLead,
+    public String updateLead(@PathVariable Long id, @ModelAttribute LeadDto leadDTO,
                              RedirectAttributes redirectAttributes) {
-        Optional<Lead> existingLeadOpt = leadService.findById(id);
-        if (existingLeadOpt.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Lead not found.");
-            return "redirect:/leads";
-        }
-
-        Lead existingLead = existingLeadOpt.get();
         try {
-            // Copy updated fields
-            existingLead.setName(updatedLead.getName());
-            existingLead.setAddress(updatedLead.getAddress());
-            existingLead.setDescription(updatedLead.getDescription());
-            existingLead.setCallFrequency(updatedLead.getCallFrequency());
-
-            // Handle status transition
-            if (updatedLead.getStatus() != existingLead.getStatus()) {
-                existingLead.transitionStatus(updatedLead.getStatus());
+            Lead lead = LeadMapper.toEntity(leadDTO);
+            leadService.update(id, lead);
+            if(lead.getErrors() != null && !lead.getErrors().isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", lead.getErrors().get(0));
             }
-
-            leadService.update(existingLead);
-            redirectAttributes.addFlashAttribute("success", "Lead updated successfully.");
+            else {
+                redirectAttributes.addFlashAttribute("success", "Lead updated successfully.");
+            }
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/leads/" + id + "/edit";
         }
 
-        return "redirect:/leads";
+        return "redirect:/leads/" + id + "/edit";
     }
 
     @GetMapping("/{id}/delete")
@@ -112,5 +119,9 @@ public class LeadController  {
             redirectAttributes.addFlashAttribute("success", "Lead deleted successfully.");
         }
         return "redirect:/leads";
+    }
+
+    private User currentUser(){
+        return userService.currentUser().get();
     }
 }

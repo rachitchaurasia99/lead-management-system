@@ -63,7 +63,6 @@
     <div class="container mt-5">
         <h1 class="text-center mb-4">Lead Form</h1>
 
-        <!-- Alert Messages -->
         <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
             <span th:text="${error}"></span>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -74,7 +73,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
 
-        <!-- Current Status Display (for existing leads) -->
         <div th:if="${lead.id != null}" class="mb-4">
             <div class="card">
                 <div class="card-body">
@@ -104,7 +102,6 @@
             <input type="hidden" th:name="${lead.id != null ? '_method' : ''}"
                    th:value="${lead.id != null ? 'put' : ''}" />
 
-            <!-- Name Field -->
             <div class="col-md-6">
                 <label for="name" class="form-label">Name</label>
                 <input type="text"
@@ -118,7 +115,6 @@
                 </div>
             </div>
 
-            <!-- Address Field -->
             <div class="col-md-6">
                 <label for="address" class="form-label">Address</label>
                 <input type="text"
@@ -132,7 +128,6 @@
                 </div>
             </div>
 
-            <!-- Call Frequency Field -->
             <div class="col-6">
                 <label for="callFrequency" class="form-label">Call Frequency (days)</label>
                 <input type="number"
@@ -140,14 +135,24 @@
                        th:field="*{callFrequency}"
                        class="form-control"
                        placeholder="Enter call frequency"
-                       min="1"
-                       required>
+                       >
                 <div class="invalid-feedback">
                     Please enter a valid call frequency.
                 </div>
             </div>
 
-            <!-- Description Field -->
+            <div class="col-md-6">
+                <label for="user" class="form-label">User</label>
+                <select id="user" th:field="*{user.id}" class="form-select" required>
+                    <option value="" disabled selected>Select User</option>
+                    <option th:each="user : ${users}"
+                            th:value="${user.id}"
+                            th:text="${user.getFirstName}">
+                    </option>
+                </select>
+                <div class="invalid-feedback">Please assign a user.</div>
+            </div>
+
             <div class="col-12">
                 <label for="description" class="form-label">Description</label>
                 <textarea id="description"
@@ -161,7 +166,6 @@
                 </div>
             </div>
 
-            <!-- Status Field -->
             <div class="col-md-6">
                 <label for="status" class="form-label">Status</label>
                 <select id="status"
@@ -181,7 +185,7 @@
                 </div>
             </div>
 
-            <!-- Submit Buttons -->
+
             <div class="col-12 text-center mt-4">
                 <button type="submit"
                         th:text="${lead.id == null ? 'Save' : 'Update'}"

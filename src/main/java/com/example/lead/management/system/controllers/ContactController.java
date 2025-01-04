@@ -1,6 +1,7 @@
 package com.example.lead.management.system.controllers;
 
 
+import com.example.lead.management.system.mapper.LeadMapper;
 import com.example.lead.management.system.models.Contact;
 import com.example.lead.management.system.models.Lead;
 import com.example.lead.management.system.services.ContactService;
@@ -29,7 +30,7 @@ public class ContactController {
 
     @GetMapping("/new")
     public String create(@PathVariable Long leadId, Model model) {
-        Optional<Lead> lead = leadService.findById(leadId);
+        Optional<Lead> lead = leadService.findById(leadId).map(LeadMapper::toEntity);
         if (lead.isEmpty()) {
             throw new RuntimeException("Lead not found");
         }
@@ -42,7 +43,7 @@ public class ContactController {
 
     @PostMapping("/save")
     public String save(@PathVariable Long leadId, Contact contact, Model model) {
-            Optional<Lead> lead = leadService.findById(leadId);
+            Optional<Lead> lead = leadService.findById(leadId).map(LeadMapper::toEntity);
             if (lead.isPresent()) {
                 contact.setLead(lead.get());
             } else {
@@ -54,7 +55,7 @@ public class ContactController {
 
     @GetMapping("")
     public String index(@PathVariable Long leadId, Model model) {
-        Optional<Lead> lead = leadService.findById(leadId);
+        Optional<Lead> lead = leadService.findById(leadId).map(LeadMapper::toEntity);
         if (lead.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lead not found");
         }
@@ -67,7 +68,7 @@ public class ContactController {
 
     @GetMapping("/{id}/edit")
     public String edit(@PathVariable Long leadId, @PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        Optional<Lead> lead = leadService.findById(leadId);
+        Optional<Lead> lead = leadService.findById(leadId).map(LeadMapper::toEntity);
         if (lead.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Lead not found");
         }
@@ -88,7 +89,7 @@ public class ContactController {
 
     @GetMapping("/{id}/delete")
     public String delete(@PathVariable Long leadId, @PathVariable Long id, RedirectAttributes redirectAttributes, Model model) {
-        Optional<Lead> lead = leadService.findById(leadId);
+        Optional<Lead> lead = leadService.findById(leadId).map(LeadMapper::toEntity);
         if (lead.isPresent()) {
             Optional<Contact> contact = contactService.findById(id);
             if(contact.isPresent()) {
@@ -107,7 +108,7 @@ public class ContactController {
 
     @PostMapping("/{id}/update")
     public String update(@PathVariable Long leadId, @PathVariable Long id, @ModelAttribute Contact updatedContact, RedirectAttributes redirectAttributes) {
-        Optional<Lead> lead = leadService.findById(leadId);
+        Optional<Lead> lead = leadService.findById(leadId).map(LeadMapper::toEntity);
         if (lead.isPresent()) {
             Optional<Contact> existingContact = contactService.findById(id);
             if (existingContact.isPresent()) {

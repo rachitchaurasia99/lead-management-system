@@ -3,14 +3,12 @@ package com.example.lead.management.system.models;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -43,13 +41,18 @@ public class User implements UserDetails {
     private String phone;
     private String address;
     private Role role;
+    private String timeZone;
     @Transient
     private String matchingPassword;
 
+    @OneToMany(mappedBy = "user")
+    private List<Lead> leads;
+
+    @OneToMany(mappedBy = "user")
+    private List<Order> orders;
     public Role getRole() {
         return role;
     }
-
     public String getMatchingPassword() { return matchingPassword; }
     public void setMatchingPassword(String matchingPassword) { this.matchingPassword = matchingPassword; }
 
@@ -123,6 +126,11 @@ public class User implements UserDetails {
         return joinDate;
     }
 
+    public String getTimeZone() { return timeZone; }
+    public void setTimeZone(String timeZone) { this.timeZone = timeZone; }
+
+    public String getFullName() { return firstName + " " + lastName; }
+
     public boolean isAdmin() {
         return this.role == Role.ADMIN;
     }
@@ -131,4 +139,13 @@ public class User implements UserDetails {
 
     public List<Role> getRoles(){ return List.of(role); }
     public void setJoinDate(Date joinDate){ this.joinDate = joinDate; }
+
+    public Long getSuccessfulConversions(){
+        return leads.stream().filter(lead -> lead.getStatus() == Lead.Status.CONVERTED).count();
+    }
+
+
+    public List<Lead> getLeads() {
+        return leads;
+    }
 }

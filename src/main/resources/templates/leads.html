@@ -36,9 +36,10 @@
         <div>
             <a href="/leads" class="btn btn-secondary">All Leads</a>
             <a href="/calls" class="btn btn-primary">View Calls Schedule</a>
+            <a href="/orders" class="btn btn-primary">View Orders</a>
             <a th:if="${current_user.isAdmin()}" href="/users" class="btn btn-secondary">Users</a>
         </div>
-        <a href="/leads/new" class="btn btn-success">+ New Lead</a>
+        <a th:if="${current_user.isAdmin()}" href="/leads/new" class="btn btn-success">+ New Lead</a>
     </div>
 
     <table class="table table-striped">
@@ -60,6 +61,8 @@
             <td th:text="${lead.status}"></td>
             <td th:text="${lead.lastCall}"></td>
             <td th:text="${lead.callFrequency}"></td>
+            <td th:text="${lead.user.fullName}"></td>
+
             <td>
                 <a th:href="@{/leads/{id}/edit(id=${lead.id})}"
                    class="btn btn-warning btn-sm">Edit</a>

@@ -1,8 +1,9 @@
 package com.example.lead.management.system.services;
 
+import com.example.lead.management.system.dtos.UserDto;
 import com.example.lead.management.system.models.User;
 import com.example.lead.management.system.repositories.UserRepository;
-
+import com.example.lead.management.system.mapper.UserMapper;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,41 +13,63 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static com.example.lead.management.system.models.User.Role.USER;
+import java.util.stream.Stream;
 
 @Service
 public class UserService implements UserDetailsService {
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
 
-    public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
-    }
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
+
+    public Optional<User> findById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
+
     public void save(User user) {
         if (userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email is already registered.");
         }
-
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        user.setRole(USER);
         userRepository.save(user);
     }
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
+
+    public void update(Long id, UserDto userDto) {
+        User user = userRepository.findById(id).orElseThrow(() -> new NoSuchElementException("User not found"));
+        userDto.setRole(user.getRole().name());
+        User updatedUser = UserMapper.toEntity(userDto);
+        updatedUser.setId(user.getId());
+        updatedUser.setPassword(user.getPassword());
+        userRepository.save(updatedUser);
     }
-    public List<User> findAll() {
-        return userRepository.findAll();
+
+    public List<User> sortByTopPerformer() {
+        return nonAdminUsers()
+                .sorted(Comparator.comparingLong(User::getSuccessfulConversions).reversed())
+                .toList();
     }
-    public void deleteById(Long id) {
-        userRepository.deleteById(id);
+
+    public List<User> sortByBottomPerformer() {
+        return nonAdminUsers()
+                .sorted(Comparator.comparingLong(User::getSuccessfulConversions))
+                .toList();
+    }
+
+    private Stream<User> nonAdminUsers() {
+        return findAll().stream().filter(user -> !user.getRole().equals(User.Role.ADMIN));
     }
 
     @Override

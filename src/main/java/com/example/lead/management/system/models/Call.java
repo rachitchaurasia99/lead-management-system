@@ -7,6 +7,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 @Entity
@@ -31,9 +33,13 @@ public class Call {
     private Contact contact;
 
     @ManyToOne
-    @NotNull
+    @NonNull
     @JoinColumn(name = "user_id")
     private User user;
+
+    @Setter
+    @NonNull
+    private String note;
 
     @CreationTimestamp
     private Date createdAt;
@@ -49,6 +55,14 @@ public class Call {
         return id;
     }
 
+    public void setNote(String note) {
+        this.note = note;
+    }
+    public String getNote() {
+        return note;
+    }
+
+
     public void setContact(Contact contact) {
         this.contact = contact;
     }
@@ -63,7 +77,7 @@ public class Call {
     }
 
     public void setDateTime(Date date) {
-        this.dateTime = date;
+        this.dateTime = Date.from(date.toInstant().atZone(ZoneId.of("UTC")).toInstant());
     }
     public Date getDateTime() {
         return dateTime;
@@ -77,4 +91,5 @@ public class Call {
     }
 
     public Status getStatus() { return status; }
+
 }

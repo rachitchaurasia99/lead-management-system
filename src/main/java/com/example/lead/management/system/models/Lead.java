@@ -1,9 +1,11 @@
 package com.example.lead.management.system.models;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Min;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -72,8 +74,6 @@ public class Lead {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-
-
     private String address;
 
     @Enumerated(EnumType.STRING)
@@ -81,6 +81,7 @@ public class Lead {
 
     private String description;
 
+    @Min(value = 1, message = "Call Frequency must be at least 1")
     private Integer callFrequency;
 
     @ManyToOne
@@ -96,15 +97,29 @@ public class Lead {
     @UpdateTimestamp
     private Date updatedAt;
 
+    @Transient
+    private List<String> errors;
+
+    @OneToMany(mappedBy = "lead")
+    private List<Order> orders;
+
     public Long getId() {
         return id;
+    }
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setCurrentStatus(Status currentStatus) {
+        this.status = currentStatus;
     }
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
     public String getAddress() { return address; }
     public void setAddress(String address) { this.address = address; }
-
+    public List<String> getErrors() { return errors; }
+    public void setErrors(List<String> errors) { this.errors = errors; }
 
     public Date lastCall() {
         return getCalls()
@@ -114,33 +129,37 @@ public class Lead {
                 .orElse(null);
     }
 
+    public String getDescription() { return description; }
+    public Integer getCallFrequency() { return callFrequency; }
+    public User getUser() { return user; }
+
+
+    public List<Contact> getContacts() {
+        return contacts;
+    }
+
+    public Status getStatus() { return status; }
 
     public Stream<Call> getCalls() {
         return contacts.stream().flatMap(contact -> contact.getCalls().stream());
     }
 
-    public Integer getCallFrequency() {
-        return callFrequency;
-    }
 
     public void setCallFrequency(Integer callFrequency) {
         this.callFrequency = callFrequency;
     }
 
-    public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
 
-    public List<Contact> getContacts() { return contacts; }
     public void setContacts(List<Contact> contacts) { this.contacts = contacts; }
     public Date getCreatedAt() { return createdAt; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
     public Date getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(Date updatedAt) { this.updatedAt = updatedAt; }
-    public String getDescription() { return description; }
+
     public void setDescription(String description) { this.description = description; }
 
 
-    public Status getStatus() { return status; }
     public void setStatus(Status status) { this.status = status; }
 
     public Set<Status> getAllowedStatuses() {

@@ -68,17 +68,33 @@
         <div class="invalid-feedback">Please select a lead contact.</div>
       </div>
 
+
       <div class="col-md-6">
-        <label for="user" class="form-label">User</label>
-        <select id="user" th:field="*{user.id}" class="form-select" required>
-          <option value="" disabled selected>Select User</option>
-          <option th:each="user : ${users}"
-                  th:value="${user.id}"
-                  th:text="${user.getFirstName}">
+        <label for="status" class="form-label">Status</label>
+        <select id="status"
+                th:field="*{status}"
+                class="form-select"
+                required>
+          <option value="" disabled>Select status</option>
+          <option th:each="status : ${T(com.example.lead.management.system.models.Call.Status).values()}"
+                  th:value="${status}"
+                  th:text="${status}">
           </option>
         </select>
-        <div class="invalid-feedback">Please assign a user.</div>
+        <div class="invalid-feedback">
+          Please select a valid status.
+        </div>
       </div>
+
+      <div class="col-12">
+        <label for="note" class="form-label">Interaction Summary</label>
+        <textarea id="description"
+                  th:field="*{note}"
+                  class="form-control"
+                  placeholder="Enter call summary"
+                  rows="3"></textarea>
+      </div>
+
 
       <div class="col-12 text-center">
         <button type="submit" th:text="${call.id == null ? 'Save' : 'Update'}" class="btn btn-primary"></button>

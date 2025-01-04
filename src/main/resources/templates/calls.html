@@ -35,10 +35,10 @@
   </style>
 </head>
 <body>
-<div th:insert="fragments/logout-button :: logout"></div>
 <div class="sidebar">
   <h4 class="text-center">Menu</h4>
   <a href="/leads">Leads</a>
+  <div th:insert="fragments/logout-button :: logout"></div>
 </div>
 <div class="container mt-4">
   <div class="row mb-4">
@@ -51,6 +51,26 @@
   </div>
 
   <div class="alert alert-info" th:if="${message}" th:text="${message}"></div>
+
+  <form th:if="${currentUser.get().isAdmin()}" th:action="@{/calls}" method="get" id="filterForm">
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <label for="lead" class="form-label">Lead</label>
+        <select id="lead" name="lead" class="form-control" th:value="${selectedLead}">
+          <option value="">-- Select Lead --</option>
+          <option th:each="lead : ${leads}" th:value="${lead.id}" th:text="${lead.name}"></option>
+        </select>
+      </div>
+
+      <div class="col-md-4">
+        <label for="user" class="form-label">User</label>
+        <select id="user" name="user" class="form-control" th:value="${selectedUser}">
+          <option value="">-- Select User --</option>
+          <option th:each="user : ${users}" th:value="${user.id}" th:text="${user.firstName + ' ' + user.lastName}"></option>
+        </select>
+      </div>
+    </div>
+  </form>
 
   <div class="card">
     <div class="card-body">
@@ -72,7 +92,7 @@
           </div>
           <tr th:each="call : ${calls}">
             <td th:text="${call.id}"></td>
-            <td th:text="${#dates.format(call.dateTime, 'yyyy-MM-dd HH:mm')}"></td>
+            <td th:text="${call.getConvertToUserTimeZone(currentUser.get().timeZone)}"></td>
             <td th:text="${call.contact != null ? call.contact.lead.name +'(' + call.contact.firstName + ' ' + call.contact.lastName + ')'  : ''}"></td>
             <td th:text="${call.user != null ? call.user.firstName : ''}"></td>
             <td>
@@ -119,5 +139,19 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('filterForm');
+    const selects = form.querySelectorAll('select');
+
+    selects.forEach(select => {
+      select.addEventListener('change', function () {
+        if (this.value) {
+          form.submit();
+        }
+      });
+    });
+  });
+</script>
 </body>
 </html>
