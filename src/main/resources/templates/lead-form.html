@@ -54,7 +54,7 @@
     <a href="/leads">Leads</a>
     <div th:if="${lead.id != null}">
         <a th:href="@{/leads/{id}/contacts(id=${lead.id})}">Contacts</a>
-        <a th:href="@{/leads/{id}/calls(id=${lead.id})}">Scheduled Calls</a>
+        <a href="/calls">Scheduled Calls</a>
         <div th:insert="fragments/logout-button :: logout"></div>
     </div>
 </div>

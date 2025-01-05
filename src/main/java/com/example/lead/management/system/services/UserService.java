@@ -1,6 +1,7 @@
 package com.example.lead.management.system.services;
 
 import com.example.lead.management.system.dtos.UserDto;
+import com.example.lead.management.system.exceptions.UserHasAssociatedLeadsException;
 import com.example.lead.management.system.models.User;
 import com.example.lead.management.system.repositories.UserRepository;
 import com.example.lead.management.system.mapper.UserMapper;
@@ -72,6 +73,15 @@ public class UserService implements UserDetailsService {
         return findAll().stream().filter(user -> !user.getRole().equals(User.Role.ADMIN));
     }
 
+    public void delete(User user) {
+        if (!user.getLeads().isEmpty()) {
+            throw new UserHasAssociatedLeadsException("Cannot delete user with associated leads.");
+        }
+
+        userRepository.delete(user);
+    }
+
+
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email).get();
@@ -91,4 +101,6 @@ public class UserService implements UserDetailsService {
         String email = ((UserDetails) currentUser).getUsername();
         return userRepository.findByEmail(email);
     }
+
+    public Optional<User> findByEmail(String email) { return userRepository.findByEmail(email); }
 }

@@ -2,6 +2,7 @@ package com.example.lead.management.system.services;
 
 import com.example.lead.management.system.models.Contact;
 import com.example.lead.management.system.models.Lead;
+import com.example.lead.management.system.models.User;
 import com.example.lead.management.system.repositories.ContactRepository;
 import org.springframework.stereotype.Service;
 
@@ -32,5 +33,9 @@ public class ContactService {
 
     public List<Contact> findAllByLead(Lead lead) {
         return contactRepository.findAllByLead(lead);
+    }
+
+    public List<Contact> findAllByUser(User user) {
+        return contactRepository.findAllByUser(user.getId());
     }
 }

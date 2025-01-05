@@ -44,6 +44,8 @@ public class User implements UserDetails {
     private String timeZone;
     @Transient
     private String matchingPassword;
+    @Transient
+    private List<String> errors;
 
     @OneToMany(mappedBy = "user")
     private List<Lead> leads;
@@ -143,9 +145,12 @@ public class User implements UserDetails {
     public Long getSuccessfulConversions(){
         return leads.stream().filter(lead -> lead.getStatus() == Lead.Status.CONVERTED).count();
     }
-
-
     public List<Lead> getLeads() {
         return leads;
     }
+    public void setLeads(List<Lead> leads) { this.leads = leads; }
+    public List<Order> getOrders() { return orders; }
+    public void setOrders(List<Order> orders) { this.orders = orders; }
+    public List<String> getErrors() { return errors; }
+    public void setErrors(List<String> errors) { this.errors = errors; }
 }

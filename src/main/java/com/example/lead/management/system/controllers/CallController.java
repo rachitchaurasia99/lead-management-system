@@ -63,7 +63,7 @@ public class CallController {
     public String create(Model model) {
         model.addAttribute("call", new CallDto());
         model.addAttribute("users", userService.findAll());
-        model.addAttribute("contacts", contactService.findAll());
+        model.addAttribute("contacts", contactService.findAllByUser(currentUser()));
         return "call-form";
     }
 
@@ -73,7 +73,7 @@ public class CallController {
                 .map(call -> {
                     model.addAttribute("call", callMapper.toDto(call));
                     model.addAttribute("users", userService.findAll());
-                    model.addAttribute("contacts", contactService.findAll());
+                    model.addAttribute("contacts", contactService.findAllByUser(currentUser()));
                     return "call-form";
                 })
                 .orElseGet(() -> {
@@ -93,7 +93,7 @@ public class CallController {
     public String update(@PathVariable Long id, @ModelAttribute CallDto callDto, Model model, RedirectAttributes redirectAttributes) {
         try {
             callService.update(id, callDto);
-            redirectAttributes.addFlashAttribute("success", "Call updated successfully.");
+            redirectAttributes.addFlashAttribute("message", "Call updated successfully.");
             model.addAttribute("call", callDto);
             return "call-form";
         } catch (NoSuchElementException e) {

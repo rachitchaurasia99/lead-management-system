@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface LeadRepository extends JpaRepository<Lead, Long> {
@@ -22,4 +23,6 @@ public interface LeadRepository extends JpaRepository<Lead, Long> {
 
     @Query("select l from Lead l where l.id IN :leadIds")
     List<Lead> findAllByIds(List<Long> leadIds);
+
+    Optional<Lead> findByIdAndUser(Long id, User user);
 }

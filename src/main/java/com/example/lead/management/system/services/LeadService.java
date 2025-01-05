@@ -103,4 +103,8 @@ public class LeadService {
     public List<Lead> findAllByIds(List<Long> leadIds) {
         return leadRepository.findAllByIds(leadIds);
     }
+
+    public Optional<Lead> findByIdAndUser(Long id, User user) {
+        return leadRepository.findByIdAndUser(id, user);
+    }
 }

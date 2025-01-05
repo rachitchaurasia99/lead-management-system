@@ -1,6 +1,7 @@
 package com.example.lead.management.system.controllers;
 
 import com.example.lead.management.system.dtos.UserDto;
+import com.example.lead.management.system.exceptions.UserHasAssociatedLeadsException;
 import com.example.lead.management.system.models.User;
 import com.example.lead.management.system.services.UserService;
 import com.example.lead.management.system.mapper.UserMapper;
@@ -102,4 +103,18 @@ public class UserController {
         model.addAttribute("users", users);
         return "users";
     }
+    @PostMapping("{id}/delete")
+    public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            User user = userService.findById(id).orElseThrow(NoSuchElementException::new);
+            userService.delete(user);
+            redirectAttributes.addFlashAttribute("message", "User removed successfully");
+        } catch (UserHasAssociatedLeadsException e) {
+            redirectAttributes.addFlashAttribute("error", "User has associated leads");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+        return "redirect:/users";
+    }
+
 }

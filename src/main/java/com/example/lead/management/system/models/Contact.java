@@ -46,6 +46,7 @@ public class Contact {
     public Long getId() {
         return id;
     }
+    public void setId(Long id) { this.id = id; }
 
     public void setLead(Lead lead) {
         this.lead = lead;

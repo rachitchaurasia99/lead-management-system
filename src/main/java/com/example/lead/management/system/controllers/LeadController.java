@@ -53,7 +53,7 @@ public class LeadController {
         lead.setCurrentStatus(leadDTO.getCurrentStatus());
 
         leadService.save(lead);
-        redirectAttributes.addFlashAttribute("success", "Lead saved successfully.");
+        redirectAttributes.addFlashAttribute("message", "Lead saved successfully.");
         return "redirect:/leads";
     }
 
@@ -74,7 +74,8 @@ public class LeadController {
 
     @GetMapping("/{id}/edit")
     public String edit(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
-        Optional<Lead> leadOpt = leadService.findById(id).map(LeadMapper::toEntity);
+        Optional<Lead> leadOpt = currentUser().isAdmin() ? leadService.findById(id).map(LeadMapper::toEntity) :
+                                 leadService.findByIdAndUser(id, currentUser());
         if (leadOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Lead not found.");
             return "redirect:/leads";
@@ -101,7 +102,7 @@ public class LeadController {
                 redirectAttributes.addFlashAttribute("error", lead.getErrors().get(0));
             }
             else {
-                redirectAttributes.addFlashAttribute("success", "Lead updated successfully.");
+                redirectAttributes.addFlashAttribute("message", "Lead updated successfully.");
             }
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -116,12 +117,12 @@ public class LeadController {
             redirectAttributes.addFlashAttribute("error", "Lead not found.");
         } else {
             leadService.deleteById(id);
-            redirectAttributes.addFlashAttribute("success", "Lead deleted successfully.");
+            redirectAttributes.addFlashAttribute("message", "Lead deleted successfully.");
         }
         return "redirect:/leads";
     }
 
-    private User currentUser(){
+    public User currentUser(){
         return userService.currentUser().get();
     }
 }

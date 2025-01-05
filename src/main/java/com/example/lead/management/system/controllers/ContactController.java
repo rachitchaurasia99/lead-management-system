@@ -50,7 +50,10 @@ public class ContactController {
                 throw new RuntimeException("Lead not found");
             }
         contactService.save(contact);
-        return "redirect:/contacts";
+        model.addAttribute("contact", contact);
+        model.addAttribute("lead", lead.get());
+        model.addAttribute("roles", Contact.Enum.values());
+        return "contact-form";
     }
 
     @GetMapping("")
@@ -76,8 +79,8 @@ public class ContactController {
             Optional<Contact> contact = contactService.findById(id);
 
             if (contact.isPresent()) {
-                model.addAttribute("contact", contact.get());
                 model.addAttribute("lead", lead.get());
+                model.addAttribute("contact", contact.get());
                 model.addAttribute("roles", Contact.Enum.values());
                 return "contact-form";
             } else {
@@ -107,7 +110,7 @@ public class ContactController {
     }
 
     @PostMapping("/{id}/update")
-    public String update(@PathVariable Long leadId, @PathVariable Long id, @ModelAttribute Contact updatedContact, RedirectAttributes redirectAttributes) {
+    public String update(@PathVariable Long leadId, @PathVariable Long id, @ModelAttribute Contact updatedContact, RedirectAttributes redirectAttributes, Model model) {
         Optional<Lead> lead = leadService.findById(leadId).map(LeadMapper::toEntity);
         if (lead.isPresent()) {
             Optional<Contact> existingContact = contactService.findById(id);
@@ -118,7 +121,10 @@ public class ContactController {
                 existingContact.get().setPhone(updatedContact.getPhone());
                 existingContact.get().setRole(updatedContact.getRole());
                 contactService.save(existingContact.get());
-                redirectAttributes.addFlashAttribute("success", "Contact Updated.");
+                model.addAttribute("lead", lead.get());
+                model.addAttribute("contact", existingContact.get());
+                model.addAttribute("roles", Contact.Enum.values());
+                redirectAttributes.addFlashAttribute("message", "Contact Updated.");
                 return "contact-form";
             }
             else {
